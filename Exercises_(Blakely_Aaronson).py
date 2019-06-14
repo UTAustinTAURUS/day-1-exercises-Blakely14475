@@ -9,7 +9,7 @@
 # 
 # Don't forget to start by importing any libraries you need.
 
-# In[4]:
+# In[1]:
 
 
 import numpy as np
@@ -36,7 +36,7 @@ from scipy import integrate
 #     
 #    G.  Print out the number of dimensions and the maximum value.
 
-# In[19]:
+# In[9]:
 
 
 logarray = np.logspace(np.log10(0.1), np.log10(10000), 10) #i have created an array with 10 evenly spaced values
@@ -44,19 +44,27 @@ logarray = np.logspace(np.log10(0.1), np.log10(10000), 10) #i have created an ar
 print(logarray[0], logarray[9], logarray[4:7]) #i want to see the first value, the 10th value, and values 5-8
 logappend = [10001, 10002] #creating a new list to append onto the array
 print(logappend) #just wanna make sure that worked...
+
 logarrayappend = np.append(logarray, logappend) #creating a new array with the appended list. i realized later that 
 #logarrayappend is a terrible name for an array cause it takes a really long time to type
 print(logarrayappend) #making sure that worked again lol
-logarrayappend / 2 #divide the whole dang thing in half
-logarrayappend.reshape(3, 4) #reshaping it into a 3x4 matrix. notably, i printed it before reshaping it, and it
+
+arrayover2 = logarrayappend / 2 #divide the whole dang thing in half
+reshaped = arrayover2.reshape(3, 4) #reshaping it into a 3x4 matrix. notably, i printed it before reshaping it, and it
 #looks like the notebook already wanted it to be a 3x4. whatever
-print(logarrayappend) #making sure that worked
-logmult = logarrayappend * logarrayappend #gonna name a brand new array which is the square of my other arrays...
+print(reshaped) #making sure that worked
+
+logmult = reshaped**2 #gonna name a brand new array which is the square of my other arrays...
+
 print(logmult) #always makin sure things worked
-logmult.ndim #okay so the dimension is one..this doesnt make a lot of sense. multiplying logarrayappend by itself is a
+print(logmult.ndim) #okay so the dimension is one..this doesnt make a lot of sense. multiplying logarrayappend by itself is a
 #dot product, then okay we'll get a single dimension scalar answer. but when we print logmult, it shows a 3x4 matrix.
 #and we're looking for the maximum value, shown below. that only makes sense if multiplying them was the act of a cross
 #product. but the cross product of a vector with itself is zero...
+#It turns out that this act of multiplication is simply multiplying each entry by itself and generating a 3x4 matrix 
+#populated with those products. print(logmult.ndim) results in a 2 being printed because that's the dimension of the
+#vectors that make up that matrix.
+
 np.max(logmult)
 
 
@@ -71,10 +79,26 @@ np.max(logmult)
 #     
 # Hint: should you loop over the elements of the array or the indices of the array?
 
-# In[ ]:
+# In[2]:
 
 
-# your solutions here
+array1 = np.array([4, 0, 6, 5, 11, 14, 12, 14, 5, 16]) #we populate our array
+print(array1)
+
+zeroarray = np.zeros((10, 2)) #we create a 10x2 matrix full of zeros
+print(zeroarray)
+
+for n in range(len(array1)): #there are very specific reasons to use n in range(len(array1)) instead of n in array1
+    #n in array1 focuses on the element (i.e. 4, 0, 6,...), whereas n in range(len(array1)) sorts and works the 
+    #numbers by their index (i.e. 0, 1, 2, 3,...) in order. what we care about is that the matrix we get after all this
+    #hard work have the same elements in the same order as we started. For that we want to focus on their indices
+    if array1[n]**2 < 100: #we have to specify that we want the element, not the index, squared. n**2 would square the
+        #index, and not the element itself
+        zeroarray[n] = [ array1[n], array1[n]**2 ] #we use n again to specify that for the nth index of array1, 
+        #modify the nth index of zeroarray
+        
+print(zeroarray) #make sure that we print zeroarray outside of the for loop, or else it will print it each time it runs
+#the loop
 
 
 # #### Exercise 2
@@ -97,10 +121,42 @@ np.max(logmult)
 #     
 # If you have multiple lines with plt.plot(), Python will plot all of them together, unless you write plt.show() after each one. I want these all on one plot.
 
-# In[ ]:
+# In[36]:
 
 
-# your solutions here
+#A 
+fig = plt.figure()
+def distro(p, x, s, m):
+    y = (1 / (s * ((2 * p)**(1/2)))) * np.exp((-((x - m)**2)) / (2 * (s**2)))
+    return y
+
+#B
+# -10 < x < 10 in all of these. what values do i want to give sigma? what values can sigma have? s =/= 0.
+#even if the difference of x - mu is a negative number, it is a squared value, multiplied by negative one. The 
+#denominator inside the exponential function is always positive (sigma is squared), so the term inside the exponential
+#will *always* be negative, dropping off towards the limit of y = 0. Note that there anywhere x = mu, exp(0) = 1, 
+#and as a result, f(x) = 1/(sigma * sqrt(2 * pi))
+y_value1 = distro(np.pi, np.linspace(-10, 10, 100), 1, 1)
+y_value2 = distro(np.pi, np.linspace(-10, 10, 100), 2, 2)
+y_value3 = distro(np.pi, np.linspace(-10, 10, 100), 3, 3)
+y_value4 = distro(np.pi, np.linspace(-10, 10, 100), 4, 4)
+y_value5 = distro(np.pi, np.linspace(-10, 10, 100), 5, 5)
+
+
+#C
+plt.plot(x, y_value1, 'g-')
+plt.plot(x, y_value2, 'b-')
+plt.plot(x, y_value3, 'r-')
+plt.plot(x, y_value4, 'orange', linestyle = '-')
+plt.plot(x, y_value5, 'purple', linestyle = '-')
+plt.xlabel('x') #i actually want to make some further changes to this to spruce it up. for instance, i'd like a 
+#legend showing that the sigma and mu values vary for each one. But I did this in only an hour and a half this morning
+#and i'm pretty proud of it
+plt.ylabel('Gaussian Distribution')
+
+#D
+fig.savefig('Blakely_Gaussian_Plot.png') 
+plt.show()
 
 
 # ### Day 3
