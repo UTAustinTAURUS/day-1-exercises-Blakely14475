@@ -9,7 +9,7 @@
 # 
 # Don't forget to start by importing any libraries you need.
 
-# In[11]:
+# In[17]:
 
 
 import numpy as np
@@ -36,7 +36,7 @@ from scipy import integrate
 #     
 #    G.  Print out the number of dimensions and the maximum value.
 
-# In[9]:
+# In[18]:
 
 
 logarray = np.logspace(np.log10(0.1), np.log10(10000), 10) #i have created an array with 10 evenly spaced values
@@ -79,7 +79,7 @@ np.max(logmult)
 #     
 # Hint: should you loop over the elements of the array or the indices of the array?
 
-# In[2]:
+# In[19]:
 
 
 array1 = np.array([4, 0, 6, 5, 11, 14, 12, 14, 5, 16]) #we populate our array
@@ -121,7 +121,7 @@ print(zeroarray) #make sure that we print zeroarray outside of the for loop, or 
 #     
 # If you have multiple lines with plt.plot(), Python will plot all of them together, unless you write plt.show() after each one. I want these all on one plot.
 
-# In[30]:
+# In[20]:
 
 
 #A 
@@ -145,7 +145,7 @@ y_value5 = distro(np.pi, np.linspace(-10, 10, 100), 5, 5)
 
 
 #C
-plt.plot(x, y_value1, 'g-', label = '(σ, μ) = (1, 1)')
+plt.plot(x, y_value1, 'g-', label = '(σ, μ) = (1, 1)') #Python 3 & Latex 2 both support Greek alphabet, which is nice
 plt.plot(x, y_value2, 'b-', label = '(σ, μ) = (2, 2)')
 plt.plot(x, y_value3, 'r-', label = '(σ, μ) = (3, 3)')
 plt.plot(x, y_value4, 'orange', linestyle = '-', label = '(σ, μ) = (4, 4)')
@@ -170,23 +170,86 @@ plt.show()
 # 
 # Hint: if you attempt to call a function from a library or package that hasn't been imported, you will get an error.
 
-# In[ ]:
+# In[22]:
 
 
-# your solution here
+column1 = np.genfromtxt('histogram_exercise.dat').T
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from scipy import optimize as opt 
+import math
+
+# THE ORDER MATTERS HERE: mu, sig, f0 is index 0, 1, 2 (x doesn't get fit)
+#def gauss2(x, mu, sig, f0):
+  #  exp = np.exp(- (x - mu)**2 / (2 * sig**2) )
+ #   return f0 * exp
+
+#bfpars, covar = opt.curve_fit(gauss2, p0=[7, 2, 2e+2])
+#mu and sigma are unknown, and i dont know what the column in the histogram is. i'm guessing it's f0?
+
+#mu, sigma = norm.fit(column1)
+fig = plt.figure()
+mu, sigma = norm.fit(column1) #this tells python to attempt to fit a μ & σ to a table of data. python already knows
+#to attempt a fit for them in that order, and we are simply telling it to use "mu" & "sigma" to represent those 
+#variables in the future. the command norm.fit(column1) finds a mu & sigma, but does not assign them variables
+print(mu, sigma)
+
+plt.hist(column1, bins=20, density=True, label='histogram') #we are only plotting a histogram of one column, here an array of values
+#which we imported
+xarray = np.linspace(mu - 4*sigma, mu + 4*sigma, 1000) #we need three columns to fit a probability density function
+#fit the pdf to a range of values associated with our histogram, namely the mu & sigma values we found
+gauss_model = norm.pdf(xarray, mu, sigma)
+plt.xlim(-5, 15)
+plt.plot(xarray, gauss_model, label='fit')
+
+plt.legend(loc='upper right', frameon=True)
+plt.xlabel('Wavelength')
+plt.ylabel('Flux')
+plt.title('Gaussian Fit, μ ≈ 5, σ ≈ 2')
+
+fig.savefig('Blakely_Histogram_Fit')
+plt.show()
+
+#here's a completely different way to map these...probably not a great idea unless you already know its gaussian
+gauss_model_test = norm.pdf(column1, mu, sigma)
+plt.plot(column1, gauss_model_test, 'o')
 
 
 # #### Exercise 2
 # 
 # Create a 1D interpolation along these arrays. Plot both the data (as points) and the interpolation (as a dotted line). Also plot the value of the interpolated function at x=325. What does the function look like to you?
 
-# In[ ]:
+# In[23]:
 
 
 x = np.array([0., 50., 100., 150., 200., 250., 300., 350., 400., 450., 500])
 y = np.array([0., 7.071, 10., 12.247, 14.142, 15.811, 17.321, 18.708, 20., 21.213, 22.361])
 
-# solution here
+plt.plot(x, y, 'o') #this is simply a plot of the arrays provided
+
+from scipy.interpolate import interp1d
+interp = interp1d(x, y) 
+
+xnew = np.linspace(0, 500, 10000)
+ynew = interp(xnew) 
+
+print(interp(x=325)) #the interpolation of x at 325 is 18.0145. this looks correct based on the chart
+#now i need to find a way to plot the chart
+
+z = 325 #hard coding numbers is a bad idea. assign z = 325, and then plot z
+t = np.array([z])
+e = np.array([interp(x=z)])
+
+plt.plot(xnew, ynew, '--')
+plt.plot(x, y, 'ob', alpha=0.25)
+dotplot = plt.plot(t, e, 'or', markersize=6) #single points default to a line, so we need to tell it to display the
+#point as a dot with 'o'
+plt.axvline(x=z)
+plt.axhline(y=interp(x=z)) 
+
+plt.show() #wanted to make sure you could see the point i found.
 
 
 # ### Day 4
